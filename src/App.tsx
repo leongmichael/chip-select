@@ -181,7 +181,7 @@ export default function App() {
 
   const activeChips = chips.filter((chip) => chip.count > 0 && chip.name.trim().length > 0);
   const buyIn = roundMoney(stackMode === "money" ? stackMoney : stackBigBlinds * bigBlind);
-  const totalBuyIns = Math.max(0, players + rebuys);
+  const totalBuyIns = Math.max(0, players * (1 + rebuys));
   const totalBankNeeded = roundMoney(buyIn * totalBuyIns);
 
   const recommendations = useMemo<ChipRecommendation[]>(() => {
@@ -271,46 +271,49 @@ export default function App() {
     setStackMode(nextMode);
   };
 
+  const modeCard = (
+    <div className="mode-card" aria-label="Game mode">
+      <button
+        className={mode === "cash" ? "active" : ""}
+        type="button"
+        onClick={() => setMode("cash")}
+      >
+        Cash game
+      </button>
+      <button
+        className={mode === "tournament" ? "active" : ""}
+        type="button"
+        onClick={() => setMode("tournament")}
+      >
+        Tournament
+        <span>Coming soon</span>
+      </button>
+    </div>
+  );
+
   return (
     <main className="app">
       <section className="hero">
         <div>
-          <p className="eyebrow">Chip Select</p>
-          <h1>Pick chip values that fit your game and your case.</h1>
-          <p className="hero-copy">
-            Enter the blinds, starting stack, players, rebuys, and chip counts. Chip Select updates the
-            recommended denominations and starting stacks as you type.
-          </p>
-        </div>
-
-        <div className="mode-card" aria-label="Game mode">
-          <button
-            className={mode === "cash" ? "active" : ""}
-            type="button"
-            onClick={() => setMode("cash")}
-          >
-            Cash game
-          </button>
-          <button
-            className={mode === "tournament" ? "active" : ""}
-            type="button"
-            onClick={() => setMode("tournament")}
-          >
-            Tournament
-            <span>Coming soon</span>
-          </button>
+          <p className="app-title">Chip Select</p>
+          <div className="hero-message">
+            <h1>Pick chip values that fit your game and your case.</h1>
+          </div>
         </div>
       </section>
 
       {mode === "tournament" ? (
-        <section className="placeholder-card">
-          <p className="eyebrow">Coming soon</p>
-          <h2>Tournament setup is on the roadmap.</h2>
-          <p>
-            This mode will eventually help choose tournament denominations, starting stacks, blind
-            schedules, and color-up points. Cash-game planning is available now.
-          </p>
-        </section>
+        <>
+          <div className="standalone-mode">{modeCard}</div>
+          <section className="placeholder-card">
+            <p className="eyebrow">Coming soon</p>
+            <h2>Tournament setup is on the roadmap.</h2>
+            <p>
+              This mode will eventually help choose tournament denominations, starting stacks, blind
+              schedules, and color-up points. Cash-game planning is available now.
+            </p>
+          </section>
+        </>
       ) : (
         <section className="workspace">
           <div className="panel controls">
@@ -323,6 +326,32 @@ export default function App() {
               <div className="stack-control">
                 <div className="stack-control-top">
                   <span>Starting stack</span>
+                </div>
+
+                <div className="stack-input-row">
+                  {stackMode === "money" ? (
+                    <NumberInput
+                      label=""
+                      value={stackMoney}
+                      min={1}
+                      step={5}
+                      prefix="$"
+                      helper={`${numberFormat.format(
+                        Math.round(stackMoney / Math.max(bigBlind, 0.01)),
+                      )} big blinds at the current big blind.`}
+                      onChange={setStackMoney}
+                    />
+                  ) : (
+                    <NumberInput
+                      label=""
+                      value={stackBigBlinds}
+                      min={1}
+                      step={5}
+                      helper={`${money(buyIn)} per player at the current big blind.`}
+                      onChange={setStackBigBlinds}
+                    />
+                  )}
+
                   <div className="stack-toggle" aria-label="Starting stack input mode">
                     <button
                       className={stackMode === "money" ? "active" : ""}
@@ -340,29 +369,6 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-
-                {stackMode === "money" ? (
-                  <NumberInput
-                    label=""
-                    value={stackMoney}
-                    min={1}
-                    step={5}
-                    prefix="$"
-                    helper={`${numberFormat.format(
-                      Math.round(stackMoney / Math.max(bigBlind, 0.01)),
-                    )} big blinds at the current big blind.`}
-                    onChange={setStackMoney}
-                  />
-                ) : (
-                  <NumberInput
-                    label=""
-                    value={stackBigBlinds}
-                    min={1}
-                    step={5}
-                    helper={`${money(buyIn)} per player at the current big blind.`}
-                    onChange={setStackBigBlinds}
-                  />
-                )}
               </div>
               <NumberInput
                 label="Small blind"
@@ -388,12 +394,12 @@ export default function App() {
                 onChange={(value) => setPlayers(Math.max(1, Math.floor(value || 1)))}
               />
               <NumberInput
-                label="Total rebuys"
+                label="Estimated rebuys per player"
                 value={rebuys}
                 min={0}
                 step={1}
                 placeholder="Optional"
-                helper="For the whole table, not per player."
+                helper="Applied to each player."
                 onChange={(value) => setRebuys(Math.max(0, Math.floor(value || 0)))}
               />
             </div>
@@ -455,13 +461,16 @@ export default function App() {
           </div>
 
           <div className="results">
-            <div className={`status-card ${bankIsShort ? "warning" : ""}`}>
-              <p>{bankIsShort ? "Bank is short" : "Bank covered"}</p>
-              <strong>{money(bankValue)}</strong>
-              <span>
-                Needed for {numberFormat.format(totalBuyIns)} total buy-ins:{" "}
-                {money(totalBankNeeded)}
-              </span>
+            <div className="top-results">
+              <div className={`status-card ${bankIsShort ? "warning" : ""}`}>
+                <p>{bankIsShort ? "Bank is short" : "Bank covered"}</p>
+                <strong>{money(bankValue)}</strong>
+                <span>
+                  Needed for {numberFormat.format(totalBuyIns)} total buy-ins:{" "}
+                  {money(totalBankNeeded)}
+                </span>
+              </div>
+              {modeCard}
             </div>
 
             <div className="panel">
