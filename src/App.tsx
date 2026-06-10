@@ -683,6 +683,7 @@ export default function App() {
           </div>
         </div>
       </section>
+      <div className="mobile-mode">{modeCard}</div>
 
       {mode === "tournament" ? (
         <section className="workspace tournament-workspace">

@@ -230,6 +230,10 @@ h3 {
   margin: 0 0 14px auto;
 }
 
+.mobile-mode {
+  display: none;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
@@ -842,6 +846,16 @@ input::placeholder {
 
   .top-results {
     grid-template-columns: 1fr;
+  }
+
+  .mobile-mode {
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  .top-results .mode-card,
+  .standalone-mode {
+    display: none;
   }
 
   .controls {
