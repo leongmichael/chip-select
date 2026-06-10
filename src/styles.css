@@ -543,12 +543,16 @@ input::placeholder {
 
 .app[data-theme="dark"] .stack-toggle button:not(.active),
 .app[data-theme="dark"] .remove-chip {
-  background: var(--raspberry);
-  color: #0f1016;
+  background: transparent;
+  color: var(--pill-text);
+}
+
+.app[data-theme="dark"] .remove-chip {
+  background: var(--pill-bg);
 }
 
 .app[data-theme="dark"] .stack-toggle {
-  background: var(--raspberry);
+  background: var(--input-bg);
 }
 
 .status-card p {
