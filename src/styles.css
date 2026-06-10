@@ -55,7 +55,8 @@ body:has(.app[data-theme="dark"]) {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -372,9 +373,25 @@ input {
   color-scheme: light;
 }
 
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  outline: 0;
+  background: var(--input-bg);
+  color: var(--heading);
+  padding: 10px 12px;
+  font-weight: 800;
+  color-scheme: light;
+}
+
 input::placeholder {
   color: color-mix(in srgb, var(--muted), white 34%);
   font-weight: 700;
+}
+
+.app[data-theme="dark"] select {
+  color-scheme: dark;
 }
 
 .input-shell input {
@@ -385,6 +402,15 @@ input::placeholder {
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
+}
+
+.tournament-form {
+  display: grid;
+  gap: 12px;
+}
+
+.tournament-option-field {
+  margin-top: 4px;
 }
 
 .chip-editor-heading {
@@ -631,6 +657,71 @@ input::placeholder {
   letter-spacing: -0.04em;
 }
 
+.tournament-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tournament-chip-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-strong);
+  padding: 12px;
+}
+
+.tournament-chip-card span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.tournament-chip-card strong {
+  display: block;
+  color: var(--heading);
+  font-size: 1.45rem;
+  letter-spacing: -0.05em;
+}
+
+.tournament-notes {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tournament-notes p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.blind-table {
+  display: grid;
+  gap: 4px;
+}
+
+.blind-row {
+  display: grid;
+  grid-template-columns: 82px minmax(110px, auto) 1fr;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+}
+
+.blind-row span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.blind-row strong {
+  color: var(--heading);
+}
+
 .stack-list {
   display: grid;
   gap: 4px;
@@ -699,6 +790,10 @@ input::placeholder {
     color-scheme: dark;
   }
 
+  select {
+    color-scheme: dark;
+  }
+
   .status-card {
     background:
       linear-gradient(135deg, rgba(239, 240, 209, 0.94), rgba(215, 192, 208, 0.84)),
@@ -762,7 +857,8 @@ input::placeholder {
 
   .mode-card,
   .input-grid,
-  .recommendations {
+  .recommendations,
+  .tournament-chip-grid {
     grid-template-columns: 1fr;
   }
 
@@ -811,6 +907,11 @@ input::placeholder {
   }
 
   .stack-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .blind-row {
     grid-template-columns: 1fr;
     gap: 4px;
   }

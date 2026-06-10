@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 type GameMode = "cash" | "tournament";
 type StackMode = "money" | "bigBlinds";
 type ThemeMode = "light" | "dark";
+type TournamentBase = "T25" | "T100" | "T5";
+type TournamentTables = "1" | "1-2" | "2" | "3";
 
 type ChipColor = {
   id: string;
@@ -17,6 +19,29 @@ type ChipRecommendation = ChipColor & {
   perPlayer: number;
 };
 
+type TournamentChip = {
+  denomination: string;
+  count: number;
+};
+
+type BlindLevel = {
+  level: number;
+  smallBlind: string;
+  bigBlind: string;
+  note?: string;
+};
+
+type TournamentOption = {
+  id: string;
+  base: TournamentBase;
+  tables: TournamentTables;
+  label: string;
+  setSize: number;
+  stack: string;
+  chips: TournamentChip[];
+  notes: string[];
+};
+
 const DEFAULT_CHIPS: ChipColor[] = [
   { id: "red", name: "Red", count: 200, swatch: "#ef4444" },
   { id: "black", name: "Black", count: 400, swatch: "#171717" },
@@ -25,6 +50,327 @@ const DEFAULT_CHIPS: ChipColor[] = [
 ];
 
 const NEW_CHIP_COLORS = ["#3b82f6", "#a855f7", "#f97316", "#14b8a6", "#eab308"];
+
+const TOURNAMENT_OPTIONS: TournamentOption[] = [
+  {
+    id: "t25-1-8",
+    base: "T25",
+    tables: "1",
+    label: "Smallest one-table T10k set",
+    setSize: 300,
+    stack: "8/8/4/7",
+    chips: [
+      { denomination: "T25", count: 80 },
+      { denomination: "T100", count: 80 },
+      { denomination: "T500", count: 40 },
+      { denomination: "T1000", count: 80 },
+      { denomination: "T5000", count: 20 },
+    ],
+    notes: [
+      "Supports ten T10k starting stacks.",
+      "Extra T1000 chips cover T25/T100 color-ups.",
+      "T5000 chips can cover rebuys, deeper stacks, and later color-ups.",
+    ],
+  },
+  {
+    id: "t25-1-12-5",
+    base: "T25",
+    tables: "1",
+    label: "Classic one-table T10k set",
+    setSize: 400,
+    stack: "12/12/5/6",
+    chips: [
+      { denomination: "T25", count: 120 },
+      { denomination: "T100", count: 120 },
+      { denomination: "T500", count: 50 },
+      { denomination: "T1000", count: 75 },
+      { denomination: "T5000", count: 35 },
+    ],
+    notes: [
+      "Supports ten T10k starting stacks.",
+      "Uses the common 12/12/5/6 T25/T100/T500/T1000 stack.",
+      "T5000 chips cover rebuys, deeper stacks, and T500 color-ups.",
+    ],
+  },
+  {
+    id: "t25-1-12-7",
+    base: "T25",
+    tables: "1",
+    label: "One-table T10k set with extra T500s",
+    setSize: 400,
+    stack: "12/12/7/5",
+    chips: [
+      { denomination: "T25", count: 120 },
+      { denomination: "T100", count: 120 },
+      { denomination: "T500", count: 70 },
+      { denomination: "T1000", count: 65 },
+      { denomination: "T5000", count: 25 },
+    ],
+    notes: [
+      "Supports ten T10k starting stacks.",
+      "Adds more T500 chips to the table.",
+      "T5000 chips remain available for rebuys and color-ups.",
+    ],
+  },
+  {
+    id: "t25-flex-600",
+    base: "T25",
+    tables: "1-2",
+    label: "Flexible 600-chip T25 set",
+    setSize: 600,
+    stack: "12/12/5/6 or 8/8/4/7",
+    chips: [
+      { denomination: "T25", count: 160 },
+      { denomination: "T100", count: 160 },
+      { denomination: "T500", count: 80 },
+      { denomination: "T1000", count: 160 },
+      { denomination: "T5000", count: 40 },
+    ],
+    notes: [
+      "For one table, supports twelve T10k stacks of 12/12/5/6.",
+      "For two tables, supports twenty T10k stacks of 8/8/4/7.",
+      "Includes extra T1000s for color-ups and T5000s for rebuys/deeper stacks.",
+    ],
+  },
+  {
+    id: "t25-2-12",
+    base: "T25",
+    tables: "2",
+    label: "Two-table classic T25 set",
+    setSize: 800,
+    stack: "12/12/5/6",
+    chips: [
+      { denomination: "T25", count: 240 },
+      { denomination: "T100", count: 240 },
+      { denomination: "T500", count: 100 },
+      { denomination: "T1000", count: 150 },
+      { denomination: "T5000", count: 70 },
+    ],
+    notes: [
+      "Supports twenty T10k starting stacks.",
+      "Uses the classic 12/12/5/6 starting stack.",
+      "T5000 chips support rebuys and color-ups.",
+    ],
+  },
+  {
+    id: "t25-3",
+    base: "T25",
+    tables: "3",
+    label: "Three-table T25 set",
+    setSize: 1000,
+    stack: "8/8/4/7/3",
+    chips: [
+      { denomination: "T25", count: 240 },
+      { denomination: "T100", count: 240 },
+      { denomination: "T500", count: 120 },
+      { denomination: "T1000", count: 240 },
+      { denomination: "T5000", count: 150 },
+      { denomination: "T25000", count: 10 },
+    ],
+    notes: [
+      "Supports thirty T25k starting stacks with five rebuys.",
+      "Also supports up to twenty players with larger T40k stacks.",
+      "A strong set when you need real multi-table coverage.",
+    ],
+  },
+  {
+    id: "t100-1-small",
+    base: "T100",
+    tables: "1",
+    label: "Small one-table T100 set",
+    setSize: 300,
+    stack: "10/4/7/4",
+    chips: [
+      { denomination: "T100", count: 100 },
+      { denomination: "T500", count: 40 },
+      { denomination: "T1000", count: 80 },
+      { denomination: "T5000", count: 80 },
+    ],
+    notes: [
+      "Supports up to ten T30k starting stacks.",
+      "Extra T1000 and T5000 chips support color-ups.",
+      "A compact but playable one-table set.",
+    ],
+  },
+  {
+    id: "t100-1-deep",
+    base: "T100",
+    tables: "1",
+    label: "Deeper one-table T100 set",
+    setSize: 400,
+    stack: "10/6/11/7",
+    chips: [
+      { denomination: "T100", count: 100 },
+      { denomination: "T500", count: 60 },
+      { denomination: "T1000", count: 120 },
+      { denomination: "T5000", count: 120 },
+    ],
+    notes: [
+      "Supports up to ten T50k starting stacks.",
+      "More chips in each stack for deeper play.",
+      "Adjust T5000s for more rebuys or deeper stacks.",
+    ],
+  },
+  {
+    id: "t100-1-antes",
+    base: "T100",
+    tables: "1",
+    label: "One-table T100 set with extra T100s",
+    setSize: 400,
+    stack: "15/5/11/3",
+    chips: [
+      { denomination: "T100", count: 150 },
+      { denomination: "T500", count: 50 },
+      { denomination: "T1000", count: 125 },
+      { denomination: "T5000", count: 75 },
+    ],
+    notes: [
+      "Supports up to ten T30k starting stacks.",
+      "Extra T100 chips help cover antes.",
+      "T1000/T5000 chips support color-ups.",
+    ],
+  },
+  {
+    id: "t100-1-plus",
+    base: "T100",
+    tables: "1",
+    label: "One-table T100 set with extra T5000s",
+    setSize: 500,
+    stack: "15/5/11/7",
+    chips: [
+      { denomination: "T100", count: 150 },
+      { denomination: "T500", count: 50 },
+      { denomination: "T1000", count: 125 },
+      { denomination: "T5000", count: 175 },
+    ],
+    notes: [
+      "Supports up to ten T50k starting stacks.",
+      "Extra T100s help cover antes.",
+      "Extra T5000s make deeper stacks and rebuys easier.",
+    ],
+  },
+  {
+    id: "t100-flex-500",
+    base: "T100",
+    tables: "1-2",
+    label: "Flexible 500-chip T100 set",
+    setSize: 500,
+    stack: "10/4/7/2 or 15/5/11/5",
+    chips: [
+      { denomination: "T100", count: 200 },
+      { denomination: "T500", count: 80 },
+      { denomination: "T1000", count: 160 },
+      { denomination: "T5000", count: 60 },
+    ],
+    notes: [
+      "Supports twenty T20k stacks using 10/4/7/2.",
+      "Also supports one table of ten T40k stacks using 15/5/11/5.",
+      "Includes extra T5000s for a few rebuys.",
+    ],
+  },
+  {
+    id: "t100-2-deep",
+    base: "T100",
+    tables: "2",
+    label: "Two-table deeper T100 set",
+    setSize: 700,
+    stack: "10/6/11/3",
+    chips: [
+      { denomination: "T100", count: 200 },
+      { denomination: "T500", count: 120 },
+      { denomination: "T1000", count: 240 },
+      { denomination: "T5000", count: 140 },
+    ],
+    notes: [
+      "Supports up to twenty T30k starting stacks.",
+      "Additional T5000s cover ten-plus rebuys or deeper stacks.",
+      "Good for regular two-table tournaments.",
+    ],
+  },
+  {
+    id: "t5-1",
+    base: "T5",
+    tables: "1",
+    label: "One-table T5 set",
+    setSize: 300,
+    stack: "10/10/7/2",
+    chips: [
+      { denomination: "T5", count: 100 },
+      { denomination: "T25", count: 100 },
+      { denomination: "T100", count: 70 },
+      { denomination: "T500", count: 30 },
+    ],
+    notes: [
+      "Supports ten T2k starting stacks.",
+      "Extra T500s color up T5/T25 chips.",
+      "Includes enough extras for one rebuy.",
+    ],
+  },
+  {
+    id: "t5-2",
+    base: "T5",
+    tables: "2",
+    label: "Two-table T5 set",
+    setSize: 600,
+    stack: "10/10/7/2",
+    chips: [
+      { denomination: "T5", count: 200 },
+      { denomination: "T25", count: 200 },
+      { denomination: "T100", count: 140 },
+      { denomination: "T500", count: 60 },
+    ],
+    notes: [
+      "Supports twenty T2k starting stacks.",
+      "Extra T500s color up T5/T25 chips.",
+      "Includes enough extras for two rebuys.",
+    ],
+  },
+];
+
+const BLIND_STRUCTURES: Record<TournamentBase, BlindLevel[]> = {
+  T25: [
+    { level: 1, smallBlind: "25", bigBlind: "50" },
+    { level: 2, smallBlind: "50", bigBlind: "100" },
+    { level: 3, smallBlind: "75", bigBlind: "150" },
+    { level: 4, smallBlind: "100", bigBlind: "200" },
+    { level: 5, smallBlind: "150", bigBlind: "300" },
+    { level: 6, smallBlind: "200", bigBlind: "400", note: "Color up T25" },
+    { level: 7, smallBlind: "300", bigBlind: "600" },
+    { level: 8, smallBlind: "400", bigBlind: "800" },
+    { level: 9, smallBlind: "600", bigBlind: "1200" },
+    { level: 10, smallBlind: "800", bigBlind: "1600" },
+    { level: 11, smallBlind: "1000", bigBlind: "2000", note: "Color up T100" },
+    { level: 12, smallBlind: "1500", bigBlind: "3000" },
+  ],
+  T100: [
+    { level: 1, smallBlind: "100", bigBlind: "100" },
+    { level: 2, smallBlind: "100", bigBlind: "200" },
+    { level: 3, smallBlind: "200", bigBlind: "400" },
+    { level: 4, smallBlind: "300", bigBlind: "600" },
+    { level: 5, smallBlind: "400", bigBlind: "800" },
+    { level: 6, smallBlind: "600", bigBlind: "1200" },
+    { level: 7, smallBlind: "800", bigBlind: "1600" },
+    { level: 8, smallBlind: "1000", bigBlind: "2000", note: "Color up T100" },
+    { level: 9, smallBlind: "1500", bigBlind: "3000" },
+    { level: 10, smallBlind: "2000", bigBlind: "4000", note: "Color up T500" },
+    { level: 11, smallBlind: "3000", bigBlind: "4000" },
+    { level: 12, smallBlind: "4000", bigBlind: "6000" },
+  ],
+  T5: [
+    { level: 1, smallBlind: "5", bigBlind: "10" },
+    { level: 2, smallBlind: "10", bigBlind: "20" },
+    { level: 3, smallBlind: "15", bigBlind: "30" },
+    { level: 4, smallBlind: "20", bigBlind: "40" },
+    { level: 5, smallBlind: "30", bigBlind: "60" },
+    { level: 6, smallBlind: "40", bigBlind: "80" },
+    { level: 7, smallBlind: "50", bigBlind: "100", note: "Color up T5" },
+    { level: 8, smallBlind: "75", bigBlind: "150" },
+    { level: 9, smallBlind: "100", bigBlind: "200" },
+    { level: 10, smallBlind: "150", bigBlind: "300" },
+    { level: 11, smallBlind: "200", bigBlind: "400", note: "Color up T25" },
+    { level: 12, smallBlind: "300", bigBlind: "600" },
+  ],
+};
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
@@ -180,6 +526,9 @@ export default function App() {
   const [players, setPlayers] = useState(5);
   const [rebuys, setRebuys] = useState(0);
   const [chips, setChips] = useState<ChipColor[]>(DEFAULT_CHIPS);
+  const [tournamentBase, setTournamentBase] = useState<TournamentBase>("T25");
+  const [tournamentTables, setTournamentTables] = useState<TournamentTables>("1");
+  const [tournamentOptionId, setTournamentOptionId] = useState("t25-1-12-5");
 
   const activeChips = chips.filter((chip) => chip.count > 0 && chip.name.trim().length > 0);
   const buyIn = roundMoney(stackMode === "money" ? stackMoney : stackBigBlinds * bigBlind);
@@ -220,6 +569,29 @@ export default function App() {
     0,
   );
   const bankIsShort = bankValue < totalBankNeeded;
+  const tournamentOptions = TOURNAMENT_OPTIONS.filter(
+    (option) => option.base === tournamentBase && option.tables === tournamentTables,
+  );
+  const selectedTournamentOption =
+    tournamentOptions.find((option) => option.id === tournamentOptionId) ?? tournamentOptions[0];
+  const blindStructure = BLIND_STRUCTURES[tournamentBase];
+
+  const updateTournamentBase = (base: TournamentBase) => {
+    const nextOption = TOURNAMENT_OPTIONS.find((option) => option.base === base);
+
+    setTournamentBase(base);
+    setTournamentTables(nextOption?.tables ?? "1");
+    setTournamentOptionId(nextOption?.id ?? "");
+  };
+
+  const updateTournamentTables = (tables: TournamentTables) => {
+    const nextOption = TOURNAMENT_OPTIONS.find(
+      (option) => option.base === tournamentBase && option.tables === tables,
+    );
+
+    setTournamentTables(tables);
+    setTournamentOptionId(nextOption?.id ?? "");
+  };
 
   const updateChip = (id: string, updates: Partial<Omit<ChipColor, "id">>) => {
     setChips((current) =>
@@ -288,7 +660,6 @@ export default function App() {
         onClick={() => setMode("tournament")}
       >
         Tournament
-        <span>Coming soon</span>
       </button>
     </div>
   );
@@ -314,17 +685,141 @@ export default function App() {
       </section>
 
       {mode === "tournament" ? (
-        <>
-          <div className="standalone-mode">{modeCard}</div>
-          <section className="placeholder-card">
-            <p className="eyebrow">Coming soon</p>
-            <h2>Tournament setup is on the roadmap.</h2>
-            <p>
-              This mode will eventually help choose tournament denominations, starting stacks, blind
-              schedules, and color-up points. Cash-game planning is available now.
-            </p>
-          </section>
-        </>
+        <section className="workspace tournament-workspace">
+          <div className="panel controls">
+            <div className="panel-heading">
+              <p className="eyebrow">Tournament inputs</p>
+              <h2>Preset selector</h2>
+            </div>
+
+            <div className="tournament-form">
+              <label className="field">
+                <span>Base chip</span>
+                <select
+                  value={tournamentBase}
+                  onChange={(event) => updateTournamentBase(event.target.value as TournamentBase)}
+                >
+                  <option value="T25">T25 - classic</option>
+                  <option value="T100">T100 - big blind ante friendly</option>
+                  <option value="T5">T5 - smaller home tourneys</option>
+                </select>
+              </label>
+
+              <label className="field">
+                <span>Tables to support</span>
+                <select
+                  value={tournamentTables}
+                  onChange={(event) =>
+                    updateTournamentTables(event.target.value as TournamentTables)
+                  }
+                >
+                  {Array.from(
+                    new Set(
+                      TOURNAMENT_OPTIONS.filter((option) => option.base === tournamentBase).map(
+                        (option) => option.tables,
+                      ),
+                    ),
+                  ).map((tables) => (
+                    <option key={tables} value={tables}>
+                      {tables === "1"
+                        ? "Just one"
+                        : tables === "1-2"
+                          ? "Usually one, sometimes two"
+                          : tables === "2"
+                            ? "Two"
+                            : "Three"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="field tournament-option-field">
+                <span>Starting-stack style</span>
+                <select
+                  value={selectedTournamentOption?.id ?? ""}
+                  onChange={(event) => setTournamentOptionId(event.target.value)}
+                >
+                  {tournamentOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label} ({option.stack})
+                    </option>
+                  ))}
+                </select>
+                <small>
+                  Stack notation follows the PDF: chips per denomination in each starting stack.
+                </small>
+              </label>
+            </div>
+          </div>
+
+          <div className="results">
+            <div className="top-results">
+              <div className="status-card">
+                <p>Tournament set</p>
+                <strong>{numberFormat.format(selectedTournamentOption?.setSize ?? 0)}</strong>
+                <span>{selectedTournamentOption?.label ?? "Choose a preset"} chips</span>
+              </div>
+              {modeCard}
+            </div>
+
+            {selectedTournamentOption ? (
+              <>
+                <div className="panel">
+                  <div className="panel-heading inline">
+                    <div>
+                      <p className="eyebrow">Recommended set</p>
+                      <h2>{selectedTournamentOption.base} tournament chips</h2>
+                    </div>
+                    <span className="pill">{selectedTournamentOption.stack}</span>
+                  </div>
+
+                  <div className="tournament-chip-grid">
+                    {selectedTournamentOption.chips.map((chip) => (
+                      <article className="tournament-chip-card" key={chip.denomination}>
+                        <span>{chip.denomination}</span>
+                        <strong>{numberFormat.format(chip.count)}</strong>
+                      </article>
+                    ))}
+                  </div>
+
+                  <div className="tournament-notes">
+                    {selectedTournamentOption.notes.map((note) => (
+                      <p key={note}>{note}</p>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="panel">
+                  <div className="panel-heading inline">
+                    <div>
+                      <p className="eyebrow">Blind structure</p>
+                      <h2>Starter schedule</h2>
+                    </div>
+                    <span className="pill">{selectedTournamentOption.base}</span>
+                  </div>
+
+                  <div className="blind-table">
+                    {blindStructure.map((level) => (
+                      <div className="blind-row" key={level.level}>
+                        <span>Level {level.level}</span>
+                        <strong>
+                          {level.smallBlind} / {level.bigBlind}
+                        </strong>
+                        <span>{level.note ?? ""}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <section className="placeholder-card">
+                <p className="eyebrow">No preset</p>
+                <h2>No PDF preset matched this combination.</h2>
+                <p>Choose a different base or table count to see a tournament set.</p>
+              </section>
+            )}
+          </div>
+        </section>
       ) : (
         <section className="workspace">
           <div className="panel controls">
