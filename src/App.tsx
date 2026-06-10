@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 
 type GameMode = "cash" | "tournament";
 type StackMode = "money" | "bigBlinds";
+type ThemeMode = "light" | "dark";
 
 type ChipColor = {
   id: string;
@@ -170,6 +171,7 @@ function NumberInput({
 
 export default function App() {
   const [mode, setMode] = useState<GameMode>("cash");
+  const [theme, setTheme] = useState<ThemeMode>("light");
   const [stackMode, setStackMode] = useState<StackMode>("money");
   const [stackMoney, setStackMoney] = useState(50);
   const [stackBigBlinds, setStackBigBlinds] = useState(100);
@@ -292,10 +294,19 @@ export default function App() {
   );
 
   return (
-    <main className="app">
+    <main className="app" data-theme={theme}>
       <section className="hero">
         <div>
-          <p className="app-title">Chip Select</p>
+          <div className="title-row">
+            <p className="app-title">Chip Select</p>
+            <button
+              className="theme-toggle"
+              type="button"
+              onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+            >
+              {theme === "light" ? "Dark mode" : "Light mode"}
+            </button>
+          </div>
           <div className="hero-message">
             <h1>Pick chip values that fit your game and your case.</h1>
           </div>
