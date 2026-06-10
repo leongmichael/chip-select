@@ -488,14 +488,16 @@ function NumberInput({
   placeholder,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   min?: number;
   step?: number;
-  onChange: (value: number) => void;
+  onChange: (value: number, rawValue: string) => void;
   prefix?: string;
   helper?: string;
   placeholder?: string;
 }) {
+  const displayValue = typeof value === "number" && value === 0 ? "" : value;
+
   return (
     <label className="field">
       {label ? <span>{label}</span> : null}
@@ -505,9 +507,11 @@ function NumberInput({
           type="number"
           min={min}
           step={step}
-          value={value === 0 ? "" : value}
+          value={displayValue}
           placeholder={placeholder}
-          onChange={(event) => onChange(event.target.value === "" ? 0 : Number(event.target.value))}
+          onChange={(event) =>
+            onChange(event.target.value === "" ? 0 : Number(event.target.value), event.target.value)
+          }
         />
       </div>
       {helper ? <small>{helper}</small> : null}
@@ -521,8 +525,8 @@ export default function App() {
   const [stackMode, setStackMode] = useState<StackMode>("money");
   const [stackMoney, setStackMoney] = useState(50);
   const [stackBigBlinds, setStackBigBlinds] = useState(100);
-  const [smallBlind, setSmallBlind] = useState(0.25);
-  const [bigBlind, setBigBlind] = useState(0.5);
+  const [smallBlindInput, setSmallBlindInput] = useState("0.25");
+  const [bigBlindInput, setBigBlindInput] = useState("0.5");
   const [players, setPlayers] = useState(5);
   const [rebuys, setRebuys] = useState(0);
   const [chips, setChips] = useState<ChipColor[]>(DEFAULT_CHIPS);
@@ -531,6 +535,8 @@ export default function App() {
   const [tournamentOptionId, setTournamentOptionId] = useState("t25-1-12-5");
 
   const activeChips = chips.filter((chip) => chip.count > 0 && chip.name.trim().length > 0);
+  const smallBlind = Number(smallBlindInput) || 0;
+  const bigBlind = Number(bigBlindInput) || 0;
   const buyIn = roundMoney(stackMode === "money" ? stackMoney : stackBigBlinds * bigBlind);
   const totalBuyIns = Math.max(0, players * (1 + rebuys));
   const totalBankNeeded = roundMoney(buyIn * totalBuyIns);
@@ -879,19 +885,19 @@ export default function App() {
               </div>
               <NumberInput
                 label="Small blind"
-                value={smallBlind}
+                value={smallBlindInput}
                 min={0.01}
                 step={0.25}
                 prefix="$"
-                onChange={setSmallBlind}
+                onChange={(_, rawValue) => setSmallBlindInput(rawValue)}
               />
               <NumberInput
                 label="Big blind"
-                value={bigBlind}
+                value={bigBlindInput}
                 min={0.01}
                 step={0.25}
                 prefix="$"
-                onChange={setBigBlind}
+                onChange={(_, rawValue) => setBigBlindInput(rawValue)}
               />
               <NumberInput
                 label="Players"
