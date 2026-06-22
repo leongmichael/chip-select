@@ -527,7 +527,7 @@ export default function App() {
   const [stackBigBlinds, setStackBigBlinds] = useState(100);
   const [smallBlindInput, setSmallBlindInput] = useState("0.25");
   const [bigBlindInput, setBigBlindInput] = useState("0.5");
-  const [players, setPlayers] = useState(5);
+  const [playersInput, setPlayersInput] = useState("5");
   const [rebuys, setRebuys] = useState(0);
   const [chips, setChips] = useState<ChipColor[]>(DEFAULT_CHIPS);
   const [tournamentBase, setTournamentBase] = useState<TournamentBase>("T25");
@@ -537,6 +537,7 @@ export default function App() {
   const activeChips = chips.filter((chip) => chip.count > 0 && chip.name.trim().length > 0);
   const smallBlind = Number(smallBlindInput) || 0;
   const bigBlind = Number(bigBlindInput) || 0;
+  const players = Math.max(1, Math.floor(Number(playersInput) || 1));
   const buyIn = roundMoney(stackMode === "money" ? stackMoney : stackBigBlinds * bigBlind);
   const totalBuyIns = Math.max(0, players * (1 + rebuys));
   const totalBankNeeded = roundMoney(buyIn * totalBuyIns);
@@ -901,10 +902,10 @@ export default function App() {
               />
               <NumberInput
                 label="Players"
-                value={players}
+                value={playersInput}
                 min={1}
                 step={1}
-                onChange={(value) => setPlayers(Math.max(1, Math.floor(value || 1)))}
+                onChange={(_, rawValue) => setPlayersInput(rawValue)}
               />
               <NumberInput
                 label="Estimated rebuys per player"
