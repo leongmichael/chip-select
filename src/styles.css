@@ -740,6 +740,36 @@ input::placeholder {
   padding: 8px 0;
 }
 
+.stack-row.adjustable {
+  grid-template-columns: 1fr auto auto;
+}
+
+.stack-slider {
+  grid-column: 1 / -1;
+}
+
+.stack-slider input {
+  accent-color: var(--raspberry);
+  display: block;
+  width: 100%;
+}
+
+.stack-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.reset-stack {
+  border: 0;
+  border-radius: 999px;
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  padding: 7px 10px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
 .stack-row strong {
   color: var(--heading);
 }
@@ -861,6 +891,10 @@ input::placeholder {
   .stack-row {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .stack-row.adjustable {
+    grid-template-columns: 1fr;
   }
 
   .blind-row {

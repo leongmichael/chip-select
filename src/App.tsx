@@ -19,6 +19,8 @@ type ChipRecommendation = ChipColor & {
   perPlayer: number;
 };
 
+type StackOverrides = Record<string, number>;
+
 type TournamentChip = {
   denomination: string;
   count: number;
@@ -434,12 +436,58 @@ function calculatePerPlayerChips(
   recommendations: ChipRecommendation[],
   buyIn: number,
   players: number,
+  overrides: StackOverrides = {},
 ) {
   if (players <= 0 || buyIn <= 0) {
     return recommendations.map(() => 0);
   }
 
+  const hasOverrides = Object.keys(overrides).length > 0;
   const counts = recommendations.map(() => 0);
+
+  if (hasOverrides) {
+    let remaining = buyIn;
+    const overriddenIds = new Set(Object.keys(overrides));
+
+    recommendations.forEach((chip, index) => {
+      if (!overriddenIds.has(chip.id)) {
+        return;
+      }
+
+      const perPlayerAvailable = Math.floor(chip.count / players);
+      const amount = clamp(Math.floor(overrides[chip.id] ?? 0), 0, perPlayerAvailable);
+
+      counts[index] = amount;
+      remaining = roundMoney(remaining - amount * chip.value);
+    });
+
+    for (let index = recommendations.length - 1; index >= 0; index -= 1) {
+      const chip = recommendations[index];
+
+      if (overriddenIds.has(chip.id)) {
+        continue;
+      }
+
+      const available = Math.max(0, Math.floor(chip.count / players) - counts[index]);
+      const amount = Math.min(available, Math.max(0, Math.floor((remaining + 0.001) / chip.value)));
+
+      counts[index] += amount;
+      remaining = roundMoney(remaining - amount * chip.value);
+    }
+
+    if (remaining > 0) {
+      const firstFlexibleIndex = recommendations.findIndex((chip) => !overriddenIds.has(chip.id));
+      const fallbackIndex = firstFlexibleIndex >= 0 ? firstFlexibleIndex : 0;
+      const chip = recommendations[fallbackIndex];
+      const available = Math.max(0, Math.floor(chip.count / players) - counts[fallbackIndex]);
+      const extra = Math.min(Math.ceil(remaining / chip.value), available);
+
+      counts[fallbackIndex] += extra;
+    }
+
+    return counts;
+  }
+
   let remaining = buyIn;
 
   recommendations.slice(0, -1).forEach((chip, index) => {
@@ -530,11 +578,14 @@ export default function App() {
   const [playersInput, setPlayersInput] = useState("5");
   const [rebuys, setRebuys] = useState(0);
   const [chips, setChips] = useState<ChipColor[]>(DEFAULT_CHIPS);
+  const [stackOverrides, setStackOverrides] = useState<StackOverrides>({});
   const [tournamentBase, setTournamentBase] = useState<TournamentBase>("T25");
   const [tournamentTables, setTournamentTables] = useState<TournamentTables>("1");
   const [tournamentOptionId, setTournamentOptionId] = useState("t25-1-12-5");
 
-  const activeChips = chips.filter((chip) => chip.count > 0 && chip.name.trim().length > 0);
+  const activeChips = chips
+    .filter((chip) => chip.count > 0 && chip.name.trim().length > 0)
+    .sort((first, second) => second.count - first.count);
   const smallBlind = Number(smallBlindInput) || 0;
   const bigBlind = Number(bigBlindInput) || 0;
   const players = Math.max(1, Math.floor(Number(playersInput) || 1));
@@ -558,13 +609,18 @@ export default function App() {
       perPlayer: 0,
     }));
 
-    const perPlayerCounts = calculatePerPlayerChips(baseRecommendations, buyIn, players);
+    const perPlayerCounts = calculatePerPlayerChips(
+      baseRecommendations,
+      buyIn,
+      players,
+      stackOverrides,
+    );
 
     return baseRecommendations.map((chip, index) => ({
       ...chip,
       perPlayer: perPlayerCounts[index] ?? 0,
     }));
-  }, [activeChips, bigBlind, buyIn, players, smallBlind, totalBankNeeded]);
+  }, [activeChips, bigBlind, buyIn, players, smallBlind, stackOverrides, totalBankNeeded]);
 
   const bankValue = recommendations.reduce((sum, chip) => sum + chip.totalValue, 0);
   const sampleStackValue = recommendations.reduce(
@@ -636,6 +692,11 @@ export default function App() {
 
   const removeChip = (id: string) => {
     setChips((current) => current.filter((chip) => chip.id !== id));
+    setStackOverrides((current) => {
+      const { [id]: _removed, ...remaining } = current;
+
+      return remaining;
+    });
   };
 
   const changeStackMode = (nextMode: StackMode) => {
@@ -999,12 +1060,20 @@ export default function App() {
               <div className="recommendations">
                 {recommendations.map((chip) => (
                   <article className="recommendation" key={chip.id}>
-                    <div className="chip-token-wrap">
+                    <label
+                      className="color-field chip-token-wrap"
+                      aria-label={`Change ${chip.name} denomination color`}
+                    >
+                      <input
+                        type="color"
+                        value={chip.swatch}
+                        onChange={(event) => updateChip(chip.id, { swatch: event.target.value })}
+                      />
                       <span
                         className={`chip-token ${chip.id === "white" ? "light" : ""}`}
                         style={{ background: chip.swatch }}
                       />
-                    </div>
+                    </label>
                     <div>
                       <h3>{chip.name}</h3>
                       <p>{numberFormat.format(chip.count)} available</p>
@@ -1022,17 +1091,47 @@ export default function App() {
                   <p className="eyebrow">Starting stack</p>
                   <h2>Per-player chips</h2>
                 </div>
-                <span className="pill">{money(sampleStackValue)}</span>
+                <div className="stack-actions">
+                  {Object.keys(stackOverrides).length > 0 ? (
+                    <button
+                      className="reset-stack"
+                      type="button"
+                      onClick={() => setStackOverrides({})}
+                    >
+                      Auto
+                    </button>
+                  ) : null}
+                  <span className="pill">{money(sampleStackValue)}</span>
+                </div>
               </div>
 
               <div className="stack-list">
-                {recommendations.map((chip) => (
-                  <div className="stack-row" key={chip.id}>
-                    <span>{chip.name}</span>
-                    <strong>{numberFormat.format(chip.perPlayer)} chips</strong>
-                    <span>{money(chip.perPlayer * chip.value)}</span>
-                  </div>
-                ))}
+                {recommendations.map((chip) => {
+                  const maxPerPlayer = Math.floor(chip.count / players);
+
+                  return (
+                    <div className="stack-row adjustable" key={chip.id}>
+                      <span>{chip.name}</span>
+                      <strong>{numberFormat.format(chip.perPlayer)} chips</strong>
+                      <span>{money(chip.perPlayer * chip.value)}</span>
+                      <label className="stack-slider">
+                        <input
+                          type="range"
+                          min="0"
+                          max={maxPerPlayer}
+                          step="1"
+                          value={chip.perPlayer}
+                          onChange={(event) =>
+                            setStackOverrides((current) => ({
+                              ...current,
+                              [chip.id]: Number(event.target.value),
+                            }))
+                          }
+                        />
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
 
               <p className="note">
