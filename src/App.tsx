@@ -570,7 +570,7 @@ function NumberInput({
 export default function App() {
   const [mode, setMode] = useState<GameMode>("cash");
   const [theme, setTheme] = useState<ThemeMode>("light");
-  const [stackMode, setStackMode] = useState<StackMode>("money");
+  const [stackMode, setStackMode] = useState<StackMode>("bigBlinds");
   const [stackMoney, setStackMoney] = useState(50);
   const [stackBigBlinds, setStackBigBlinds] = useState(100);
   const [smallBlindInput, setSmallBlindInput] = useState("0.25");

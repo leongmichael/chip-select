@@ -1,34 +1,30 @@
 :root {
-  --raspberry: #d33f49;
-  --thistle: #d7c0d0;
-  --beige: #eff0d1;
-  --muted-teal: #77ba99;
-  --shadow-grey: #262730;
-  --gunmetal: #3a3b43;
-  --page-bg:
-    radial-gradient(circle at top left, rgba(211, 63, 73, 0.18), transparent 34rem),
-    radial-gradient(circle at top right, rgba(119, 186, 153, 0.2), transparent 30rem),
-    linear-gradient(135deg, #fbf7ec 0%, var(--beige) 100%);
-  --text: var(--shadow-grey);
-  --heading: #171821;
-  --muted: #6b6d76;
+  --raspberry: #2563eb;
+  --cream: #f7f3ee;
+  --ink: #282828;
+  --slate: #4d4d4d;
+  --line: #ded7cf;
+  --page-bg: var(--cream);
+  --text: var(--ink);
+  --heading: #181818;
+  --muted: #77706a;
   --accent: var(--raspberry);
-  --accent-contrast: #fff7f0;
-  --surface: rgba(255, 252, 241, 0.8);
-  --surface-strong: #fffaf0;
-  --surface-soft: rgba(239, 240, 209, 0.78);
-  --input-bg: rgba(255, 252, 245, 0.9);
-  --border: rgba(38, 39, 48, 0.12);
-  --shadow: rgba(38, 39, 48, 0.12);
-  --primary: var(--shadow-grey);
-  --primary-2: var(--gunmetal);
-  --primary-text: #fffaf0;
-  --pill-bg: rgba(215, 192, 208, 0.42);
-  --pill-text: var(--raspberry);
-  --control-text: var(--raspberry);
-  --focus: rgba(119, 186, 153, 0.22);
+  --accent-contrast: #fffaf6;
+  --surface: #fffaf5;
+  --surface-strong: #ffffff;
+  --surface-soft: #f0e9e2;
+  --input-bg: #ffffff;
+  --border: var(--line);
+  --shadow: rgba(40, 40, 40, 0.06);
+  --primary: var(--raspberry);
+  --primary-2: var(--slate);
+  --primary-text: #ffffff;
+  --pill-bg: #eee5df;
+  --pill-text: var(--ink);
+  --control-text: var(--ink);
+  --focus: rgba(196, 69, 92, 0.16);
   color: var(--text);
-  background: var(--beige);
+  background: var(--cream);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -48,10 +44,7 @@ body {
 }
 
 body:has(.app[data-theme="dark"]) {
-  background:
-    radial-gradient(circle at top left, rgba(211, 63, 73, 0.24), transparent 34rem),
-    radial-gradient(circle at top right, rgba(119, 186, 153, 0.14), transparent 30rem),
-    linear-gradient(135deg, var(--shadow-grey) 0%, #1c1d24 100%);
+  background: #171717;
 }
 
 button,
@@ -71,25 +64,23 @@ button {
 }
 
 .app[data-theme="dark"] {
-  --page-bg:
-    radial-gradient(circle at top left, rgba(211, 63, 73, 0.24), transparent 34rem),
-    radial-gradient(circle at top right, rgba(119, 186, 153, 0.14), transparent 30rem),
-    linear-gradient(135deg, var(--shadow-grey) 0%, #1c1d24 100%);
-  --text: var(--beige);
-  --heading: #fbf7ec;
-  --muted: color-mix(in srgb, var(--thistle), var(--beige) 12%);
-  --surface: rgba(58, 59, 67, 0.76);
-  --surface-strong: rgba(38, 39, 48, 0.86);
-  --surface-soft: rgba(215, 192, 208, 0.12);
-  --input-bg: rgba(38, 39, 48, 0.72);
-  --border: rgba(239, 240, 209, 0.15);
-  --shadow: rgba(0, 0, 0, 0.28);
-  --primary: var(--beige);
-  --primary-2: var(--beige);
-  --primary-text: var(--shadow-grey);
-  --pill-bg: rgba(215, 192, 208, 0.18);
-  --pill-text: var(--thistle);
-  --focus: rgba(119, 186, 153, 0.3);
+  --page-bg: #171717;
+  --text: #ece7df;
+  --heading: #fff8ef;
+  --muted: #aaa19a;
+  --surface: #202020;
+  --surface-strong: #262626;
+  --surface-soft: #2c2927;
+  --input-bg: #181818;
+  --border: #3a3632;
+  --shadow: rgba(0, 0, 0, 0.18);
+  --primary: #6ea8ff;
+  --primary-2: #d9d1c8;
+  --primary-text: #0f172a;
+  --pill-bg: #2f2a28;
+  --pill-text: #ece7df;
+  --control-text: #ece7df;
+  --focus: rgba(196, 69, 92, 0.28);
   color: var(--text);
 }
 
@@ -135,7 +126,7 @@ button {
   padding: 8px 12px;
   font-size: 0.76rem;
   font-weight: 900;
-  box-shadow: 0 8px 20px var(--shadow);
+  box-shadow: none;
 }
 
 h1,
@@ -185,10 +176,9 @@ h3 {
 .status-card,
 .placeholder-card {
   border: 1px solid var(--border);
-  border-radius: 22px;
+  border-radius: 18px;
   background: var(--surface);
-  box-shadow: 0 16px 48px var(--shadow);
-  backdrop-filter: blur(18px);
+  box-shadow: 0 8px 24px var(--shadow);
 }
 
 .mode-card {
@@ -199,9 +189,9 @@ h3 {
 }
 
 .mode-card button {
-  min-height: 54px;
-  border: 0;
-  border-radius: 18px;
+  min-height: 48px;
+  border: 1px solid transparent;
+  border-radius: 14px;
   background: transparent;
   color: var(--muted);
   font-weight: 800;
@@ -216,9 +206,10 @@ h3 {
 }
 
 .mode-card button.active {
-  background: var(--primary);
-  color: var(--primary-text);
-  box-shadow: 0 14px 30px color-mix(in srgb, var(--primary), transparent 72%);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 90%);
+  color: var(--heading);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .mode-card button.active span {
@@ -328,7 +319,7 @@ h3 {
 }
 
 .stack-toggle button {
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   color: var(--control-text);
@@ -340,15 +331,16 @@ h3 {
 }
 
 .stack-toggle button.active {
-  background: var(--primary);
-  color: var(--primary-text);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 90%);
+  color: var(--heading);
 }
 
 .input-shell {
   display: flex;
   align-items: center;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--input-bg);
   transition:
     border-color 180ms ease,
@@ -357,7 +349,7 @@ h3 {
 
 .input-shell:focus-within,
 .chip-row input:focus {
-  border-color: var(--muted-teal);
+  border-color: var(--accent);
   box-shadow: 0 0 0 4px var(--focus);
 }
 
@@ -380,7 +372,7 @@ input {
 select {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   outline: 0;
   background: var(--input-bg);
   color: var(--heading);
@@ -433,10 +425,11 @@ input::placeholder {
 }
 
 .add-chip {
-  background: var(--primary);
-  color: var(--primary-text);
+  border: 1px solid var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 92%);
+  color: var(--heading);
   padding: 9px 12px;
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--primary), transparent 82%);
+  box-shadow: none;
 }
 
 .remove-chip {
@@ -460,7 +453,7 @@ input::placeholder {
 
 .chip-row input {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--input-bg);
   padding: 9px 10px;
   text-align: right;
@@ -496,9 +489,7 @@ input::placeholder {
 .chip-token {
   display: inline-block;
   border-radius: 999px;
-  box-shadow:
-    inset 0 0 0 4px rgba(255, 255, 255, 0.32),
-    inset 0 0 0 8px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.34);
 }
 
 .swatch {
@@ -513,9 +504,7 @@ input::placeholder {
 
 .app[data-theme="dark"] .swatch,
 .app[data-theme="dark"] .chip-token {
-  box-shadow:
-    inset 0 0 0 4px rgba(255, 255, 255, 0.18),
-    inset 0 0 0 8px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .results {
@@ -537,38 +526,31 @@ input::placeholder {
   align-items: center;
   min-height: 76px;
   padding: 14px 16px;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--shadow-grey), transparent 3%), color-mix(in srgb, var(--gunmetal), transparent 8%)),
-    var(--primary);
-  color: var(--primary-text);
+  border-color: color-mix(in srgb, var(--accent), var(--border) 45%);
+  background: var(--surface-strong);
+  color: var(--heading);
 }
 
 .status-card.warning {
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--raspberry), var(--shadow-grey) 18%), color-mix(in srgb, var(--raspberry), var(--gunmetal) 42%)),
-    var(--raspberry);
+  background: color-mix(in srgb, var(--accent), transparent 90%);
 }
 
 .app[data-theme="dark"] .status-card {
-  background:
-    linear-gradient(135deg, rgba(239, 240, 209, 0.94), rgba(215, 192, 208, 0.84)),
-    var(--beige);
+  background: var(--surface-strong);
 }
 
 .app[data-theme="dark"] .status-card.warning {
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--raspberry), var(--beige) 12%), color-mix(in srgb, var(--raspberry), var(--shadow-grey) 24%)),
-    var(--raspberry);
-  color: #fffaf0;
+  background: color-mix(in srgb, var(--accent), transparent 86%);
+  color: var(--heading);
 }
 
 .app[data-theme="dark"] .status-card.warning p,
 .app[data-theme="dark"] .status-card.warning span {
-  color: rgba(255, 250, 240, 0.78);
+  color: var(--muted);
 }
 
 .app[data-theme="dark"] .status-card.warning strong {
-  color: #fffaf0;
+  color: var(--heading);
 }
 
 .app[data-theme="dark"] .stack-toggle button:not(.active),
@@ -587,7 +569,7 @@ input::placeholder {
 
 .status-card p {
   margin-bottom: 0;
-  color: var(--primary-text);
+  color: var(--accent);
   font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.07em;
@@ -603,10 +585,11 @@ input::placeholder {
   line-height: 1;
   letter-spacing: -0.06em;
   text-align: center;
+  color: var(--heading);
 }
 
 .status-card span {
-  color: color-mix(in srgb, var(--primary-text), transparent 28%);
+  color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
 }
